@@ -1,0 +1,28 @@
+text, .keyword, .clickable {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 12px;
+    user-select: none;
+    text-rendering: geometricPrecision;
+}
+
+.keyword, .clickable {
+    font-weight: bold;
+}
+
+.keyword.unselected, .clickable {
+    fill: blue;
+    text-decoration: underline;
+}
+
+.keyword:not(.inverted,.unselected) {
+    fill: white;
+}
+
+
+.title, .viz-excerpt {
+    cursor: pointer;
+}
+
+.title .citecount {
+    fill: gray;
+}

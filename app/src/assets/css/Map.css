@@ -1,0 +1,171 @@
+#map-search {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20vw;
+    min-width: 420px;
+    z-index: 10;
+    display: flex;
+    flex-direction: row;
+    padding: 12px;
+    box-sizing: border-box;
+
+    background: linear-gradient(rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+}
+
+#map-search form {
+    align-items: center;
+    z-index: 1;
+    flex: 1;
+    padding: 12px 12px 12px 0;
+}
+
+#map-search input {
+    box-shadow: 1px 1px 1px 1px #0004;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#close-button {
+    margin: 12px;
+    visibility: hidden;
+}
+
+#close-button.above-panel {
+    visibility: visible;
+}
+
+#map-search input.above-panel {
+    box-shadow: none;
+}
+
+#map-panel {
+    width: 20vw;
+    min-width: 420px;
+    z-index: 9;
+    height: 100vh;
+
+    padding-top: calc(24px + 2em);
+    box-sizing: border-box;
+
+    box-shadow: 1px 0 2px 2px #0004;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+#map-panel-content {
+    padding: 12px 12px 64px 12px;
+}
+
+#map-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#map-status {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 100;
+    padding: 12px;
+}
+
+#map-controls {
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*left: 50%;*/
+    /*transform: translateX(-50%);*/
+    z-index: 1;
+    padding: 12px;
+    text-align: center;
+    line-height: 2em;
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: 1px solid gray;
+}
+
+@media (max-width: 1300px) {
+    #map-controls {
+        top: calc(48px + 1em);
+        left: 0;
+        transform: none;
+    }
+}
+
+#map-controls span {;
+    display: inline-block;
+    margin-right: 12px;
+}
+
+#map-controls:last-child {
+    margin-right: 0;
+}
+
+#map-controls input {
+    max-width: 50px;
+    margin-left: 6px;
+}
+
+#map-switcher {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    z-index: 11;
+}
+
+#context-menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 12;
+}
+
+#context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid gray;
+    z-index: 13;
+}
+
+.context-menu-item {
+    padding: 6px;
+    cursor: pointer;
+}
+
+.context-menu-item:hover {
+    background: #ffb;
+}
+
+.excerpt-group:before {
+    content: '';
+    display: block;
+    position: relative;
+    width: 0;
+    height: 5em;
+    margin-top: -5em
+}
+
+.keyword-panel {
+    box-shadow: -1px 0 2px 2px #0004;
+    z-index: 9;
+}
+
+.keyword-panel .keyword.selected a {
+    background-color: blue;
+    color: white;
+}
+
+#viz-panel {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}

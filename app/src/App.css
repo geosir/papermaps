@@ -1,0 +1,51 @@
+#app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+}
+
+#body {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+}
+
+#footer {
+    text-align: center;
+    padding: 12px;
+    color: gray;
+}
+
+#attrib {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    color: #0004;
+    margin: 0;
+}
+
+header {
+    padding: 12px;
+    font-size: 2em;
+    background: black;
+    color: white;
+}
+
+header .subtitle {
+    font-size: 0.6em;
+    color: gray;
+}
+
+.article {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 12px;
+}
+
+.article h1 {
+    text-align: center;
+}

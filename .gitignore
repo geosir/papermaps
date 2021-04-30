@@ -1,0 +1,7 @@
+# Build files
+app/build/
+__pycache__/
+
+# Usage logs
+logs/
+

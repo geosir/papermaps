@@ -1,0 +1,11 @@
+.search-result {
+    padding: 12px;
+}
+
+.search-result p {
+    margin: 0;
+}
+
+.search-detail {
+    font-size: 0.8em;
+}
