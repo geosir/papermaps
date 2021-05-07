@@ -13,7 +13,7 @@ Installation
 1. Create a Python virtual environment:
 
 ```shell
-virtualenv -p python3.9 env
+virtualenv -p python3 env
 ```
 
 2. Activate the virtual environment:
@@ -21,7 +21,7 @@ virtualenv -p python3.9 env
 (The script in `env/bin` that you run may vary depending on your shell. For sh/bash:)
 
 ```shell
-source bin/env/activate
+source env/bin/activate
 ```
 
 3. Install Python requirements:
