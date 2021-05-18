@@ -57,21 +57,30 @@ export const processLayoutForLanes = async (data, selectedKW) => {
     //      > [paper B width] + [padding constant] - [paper A keyword position]
     //          - (i / n) * ([paper C keyword position] - [paper A keyword position]) - [BIG_NUMBER]
 
-    // Generate model
-    const lpmodel = {
-        optimize: "objective",
-        opType: "min",
-        constraints: {},
-        variables: {},
-        ints: {}
-    };
-
     const edges = data.edges;
-    const sequence = data.sequence;
+    const sortedKeywordLines = Object.entries(edges).sort((a, b) => {
+        const aLen = a[1].reduce((acc, segment) => acc + segment.length, 0);
+        const bLen = b[1].reduce((acc, segment) => acc + segment.length, 0);
+        return bLen - aLen;
+    });
 
-    // Edge-skew optimization
-    Object.entries(edges).forEach(([keyword, edge]) => {
-        if (selectedKW !== undefined && !selectedKW.includes(keyword)) return; // Ignore unfocused edges
+    let status, results; // DEBUG
+    const sequence = data.sequence;
+    const anchors = {};
+    for (let [keyword, edge] of sortedKeywordLines) {
+        console.log("LAYOUT FOR", keyword);
+
+        // Generate model
+        const lpmodel = {
+            optimize: "objective",
+            opType: "min",
+            constraints: {},
+            variables: {},
+            ints: {}
+        };
+
+        // Edge-skew optimization
+        if (selectedKW !== undefined && !selectedKW.includes(keyword)) continue; // Ignore unfocused edges
         edge.forEach((segment, j) => {
             slide(segment, (curr, prev, i) => {
                 // constraint for edge of keyword, segment j, minSkew on node i, positive direction:
@@ -121,10 +130,8 @@ export const processLayoutForLanes = async (data, selectedKW) => {
                 };
             });
         });
-    });
 
-    Object.entries(edges).forEach(([keyword, edge]) => {
-        if (selectedKW !== undefined && !selectedKW.includes(keyword)) return; // Ignore unfocused edges
+        if (selectedKW !== undefined && !selectedKW.includes(keyword)) continue; // Ignore unfocused edges
         edge.forEach((segment, j) => {
             slide(segment, (next, prev) => {
                 const prevIndex = data.papers[prev.pid].index;
@@ -210,12 +217,19 @@ export const processLayoutForLanes = async (data, selectedKW) => {
                 }
             });
         });
-    });
 
-    console.log(lpmodel);
-    const [status, results] = await solveLP(lpmodel);
-    data.lpstatus = status;
-    console.log(results);
+        console.log(lpmodel);
+        [status, results] = await solveLP(lpmodel);
+        data.lpstatus = status;
+        console.log(results);
+
+        // Iterate over papers in this Keyword Line and save their positions into the anchor dict.
+        edge.forEach((segment) => segment.forEach((paper) => {
+            anchors[paper.pid] = results[`p${paper.pid}`];
+        }));
+    }
+
+    console.log("DATA", data);
 
     const minPos = Object.values(data.papers).reduce((acc, p) => {
         const x = results[`p${p.Id}`];
