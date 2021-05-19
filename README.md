@@ -6,8 +6,31 @@ Using Title Keywords for Visual Exploration of Academic Citation Networks
 This is an experimental layout intended to help researchers tell better stories of new topics areas they would like to
 explore, to aid understanding and discovery of related works.
 
+Docker Installation & Run (recommended)
+-----
 
-Installation
+Installing with docker is super easy because it's been containerized to be consistent on every machine!
+
+1. Build the papermaps docker container
+
+```shell
+./build_docker.sh
+```
+
+(You can edit this file to change the tag of the docker image.)
+
+2. Run the docker container
+
+```shell
+./run_docker.sh
+```
+
+Papermaps will now be served at [http://localhost:8000](http://localhost:8000).
+
+(You can edit this file to change the port mapping and other options.)
+
+
+Local Installation
 -----
 
 1. Create a Python virtual environment:
@@ -40,7 +63,7 @@ yarn install
 Now you're all set to develop!
 
 
-Running for Development
+Running Locally for Development
 -----
 
 Just run:
