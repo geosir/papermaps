@@ -188,17 +188,18 @@ export default function DynamicLanesViz(props) {
         if (props.getCount !== undefined) params.maxGetCount = getCount;
         params.hideUnmapped = !showUnmapped;
         params.showExcerpts = showExcerpts;
+        params.citedBy = true;
         if (paperID) {
             (async () => {
                 setStatus({status: 'working', message: "Getting Papers..."});
                 const level0 = await getPaper(paperID, params);
                 const level1 = [...await getRefs(paperID, params), ...await getCites(paperID, params)];
-                // const expanded = expansions.length ? [
-                //     ...await getPaper(expansions.join(","), params),
-                //     ...await getRefs(expansions.join(","), params),
-                //     ...await getCites(expansions.join(","), params)] : [];
-                // const papers = [...level0, ...level1, ...expanded];
-                const papers = [...level0, ...level1];
+                const expanded = expansions.length ? [
+                    ...await getPaper(expansions.join(","), params),
+                    ...await getRefs(expansions.join(","), params),
+                    ...await getCites(expansions.join(","), params)] : [];
+                const papers = [...level0, ...level1, ...expanded];
+                // const papers = [...level0, ...level1];
 
                 setStatus({status: 'working', message: "Structuring Papers..."});
 
@@ -258,6 +259,11 @@ export default function DynamicLanesViz(props) {
         if (search?.get("inspect")) setInspect(search?.get("inspect"));
         else setInspect(paperID);
     }, [location]);
+
+    // DEBUG
+    useEffect(() => {
+        console.log("DATA", data)
+    }, [data])
 
     // Rendering
     // Draw paper titles
@@ -433,8 +439,7 @@ export default function DynamicLanesViz(props) {
                                             fill: '#080',
                                             fontWeight: 'bold'
                                         }}>EXPANDED</tspan>)
-                                    }
-                                        {/*&lt;{p.citation_count}&gt; {Array(Math.ceil(Math.log2(1 + p.citation_count / data.maxCitations * 31))).fill("*").join("")}*/}
+                                    } &lt;{p.citation_count}&gt; {Array(Math.ceil(Math.log2(1 + p.citation_count / data.maxCitations * 31))).fill("*").join("")}
                                     </tspan>
                                 </text>
                             </g>

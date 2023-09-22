@@ -94,9 +94,16 @@ def get_paper():
               DEFAULT_FIELDS)
 
     # First search as direct Bibcode
-    bibcode_q = ads_query(f'bibcode:{query}', fields=fields, count=count)
-    if 'docs' in bibcode_q and len(bibcode_q['docs']) > 0:
-        result = bibcode_q['docs']
+    if ',' in query:
+        chain_querry = " OR ".join(f"bibcode:{b}" for b in query.split(','))
+        bibcodes_q = ads_query(chain_querry, fields=fields, count=count)
+        if 'docs' in bibcodes_q and len(bibcodes_q['docs']) > 0:
+            result = bibcodes_q['docs']
+
+    if result is None:
+        bibcodes_q = ads_query(f'bibcode:{query}', fields=fields, count=count)
+        if 'docs' in bibcodes_q and len(bibcodes_q['docs']) > 0:
+            result = bibcodes_q['docs']
 
     # Search as DOI
     if result is None:
@@ -164,6 +171,8 @@ def get_cites():
 @cross_origin(origin='*')
 def solve():
     data = request.json
+
+    print("SOLVE LP", data)
 
     solver = pl.getSolver('PULP_CBC_CMD', timeLimit=SOLVER_TIMEOUT, threads=100)
     prob = pl.LpProblem("prob", pl.LpMinimize)

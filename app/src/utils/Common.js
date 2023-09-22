@@ -4,9 +4,9 @@ import Values from "../constants/Values";
 import * as kextract from "keyword-extractor";
 import * as stemmer from "stemmer";
 
-export const getPaper = async (id, params) => fetch(Values.API_URL + `/get_paper?n=${params.maxGetCount}&q=${id}&abs=1&citcon=1`).then(async (res) => (await res.json()).result).catch(() => []);
-export const getRefs = async (id, params) => fetch(Values.API_URL + `/get_refs?n=${params.maxGetCount}&id=${id}&abs=1&citcon=1`).then(async (res) => (await res.json()).result).catch(() => []);
-export const getCites = async (id, params) => fetch(Values.API_URL + `/get_cites?n=${params.maxGetCount}&id=${id}&abs=1&citcon=1`).then(async (res) => (await res.json()).result).catch(() => []);
+export const getPaper = async (id, params) => fetch(Values.API_URL + `/get_paper?n=${params.maxGetCount}&q=${id}&abs=1&citcon=1&citedBy=${params.citedBy}`).then(async (res) => (await res.json()).result).catch(() => []);
+export const getRefs = async (id, params) => fetch(Values.API_URL + `/get_refs?n=${params.maxGetCount}&id=${id}&abs=1&citcon=1&citedBy=${params.citedBy}`).then(async (res) => (await res.json()).result).catch(() => []);
+export const getCites = async (id, params) => fetch(Values.API_URL + `/get_cites?n=${params.maxGetCount}&id=${id}&abs=1&citcon=1&citedBy=${params.citedBy}`).then(async (res) => (await res.json()).result).catch(() => []);
 export const solveLP = async (model) => fetch(Values.API_URL + "/solve", {
     method: 'POST',
     headers: {
@@ -79,6 +79,8 @@ export function processKeywords(papers, params) {
 
 // Identify subgraph in the citation network to render into storylines.
 export function processGraph(data) {
+    console.log("PROCESS GRAPH DATA", data)
+
     // Populate connectivity data: link each paper to its children
     Object.values(data.papers).forEach((p) => p.children = [])
     Object.values(data.papers)
@@ -151,7 +153,7 @@ export function prepareLayout(data) {
         const paper = data.papers[id];
         paper.index = i;
         const yLength = String(paper.year).length + 3;
-        const cLength = String(paper.CC).length + 3;
+        const cLength = String(paper.citation_count).length + 3;
         paper.layout = {
             x: 0,
             yLength,
@@ -199,7 +201,7 @@ export function postLayout(data) {
 
         // Determine if paper is shown
         if (params.hideUnmapped && paper.unmapped) paper.hidden = true;
-        else if (params.minCitations > paper.CC) paper.hidden = true;
+        else if (params.minCitations > paper.citation_count) paper.hidden = true;
         else paper.hidden = false;
 
         // Update y-positions
@@ -213,7 +215,7 @@ export function postLayout(data) {
     });
 
     // Find max citations
-    data.maxCitations = Object.values(data.papers).reduce((acc, p) => Math.max(acc, p.CC), 0);
+    data.maxCitations = Object.values(data.papers).reduce((acc, p) => Math.max(acc, p.citation_count), 0);
 
     return data;
 }

@@ -73,7 +73,7 @@ function InspectPaper(props) {
                         logEvent('inspect_mag_title_id', {pid: paper.bibcode});
                     }}>ID: {paper.bibcode}</a>
                 </span></h3>
-                <p>{renderAuthors(paper.author, true)} &mdash; <i>{paper.CC} citations</i></p>
+                <p>{renderAuthors(paper.author, true)} &mdash; <i>{paper.citation_count} citations</i></p>
                 <button onClick={makeFocus(true)}>Focus This Paper</button>
                 <button onClick={() => {
                     logEvent('inspect_mag_button', {pid: paper.bibcode});
