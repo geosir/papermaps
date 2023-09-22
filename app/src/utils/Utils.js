@@ -4,9 +4,9 @@ import Values from "../constants/Values";
 
 export const renderAuthors = (authors, full) => {
     if (authors.length > 3 && !full) {
-        return authors[0].DAuN + ", et al.";
+        return authors[0].split(",")[0] + ", et al.";
     } else {
-        return authors.map((a) => a.DAuN).join(", ")
+        return authors.map((a) => a.split(",")[0]).join(", ")
     }
 }
 

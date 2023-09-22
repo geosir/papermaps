@@ -21,20 +21,20 @@ const makeExpand = (id, location) => () => {
 }
 
 const makePaperItemRenderer = (next, location, history) => (e) => <div className={'search-result'} key={e.Id}>
-    <a href={(next ? next : "/lanes/") + e.Id} onClick={() => logEvent('search_select', {pid: e.Id})}>
-        <p className={'search-title'}><b>({e.Y}) {e.DN}</b></p>
+    <a href={(next ? next : "/lanes/") + e.bibcode} onClick={() => logEvent('search_select', {pid: e.bibcode})}>
+        <p className={'search-title'}><b>({e.year}) {e.title}</b></p>
     </a>
-    <p className={'search-authors'}><i>{renderAuthors(e.AA)}</i></p>
+    <p className={'search-authors'}><i>{renderAuthors(e.author)}</i></p>
     <p className={'search-detail'}>
         <span className={'search-expand'}>
             <a href={"javascript:void(0)"} onClick={(event) => {
                 makeExpand(e.Id, location, history)(event);
-                logEvent('search_expand', {pid: e.Id})
+                logEvent('search_expand', {pid: e.bibcode})
             }}>Add to Map</a>
         </span> &mdash; <span className={'search-id'}>
-        <a target={"_blank"} href={"https://academic.microsoft.com/paper/" + e.Id}
+        <a target={"_blank"} href={`https://ui.adsabs.harvard.edu/abs/${e.bibcode}/abstract`}
            onClick={() => logEvent('search_mag', {pid: e.Id})}>
-            MAGID: {e.Id}</a></span> &mdash; <span className={'search-citations'}>cited {e.CC} times</span>
+            Bibcode: {e.bibcode}</a></span> &mdash; <span className={'search-citations'}>cited {e.citation_count} times</span>
     </p>
 </div>;
 

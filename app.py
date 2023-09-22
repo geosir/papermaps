@@ -1,3 +1,4 @@
+import urllib.parse
 import requests
 import random
 import time
@@ -11,8 +12,6 @@ from flask_cors import CORS, cross_origin
 
 import pulp as pl
 
-# === SETUP ==============================
-
 # Flask
 app = Flask(__name__, static_folder='app', static_url_path="/app")
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -23,48 +22,56 @@ CORS(app)
 
 
 DEFAULT_COUNT = 100
-DEFAULT_ATTR = ['Id', 'Ti', 'DN', 'Y', 'AA.DAuN', 'RId', 'CC', 'VSN', 'VFN', 'S']
+DEFAULT_FIELDS = ['bibcode', 'title', 'year', 'author', 'citation_count']
+# DEFAULT_ATTR = ['Id', 'Ti', 'DN', 'Y', 'AA.DAuN', 'RId', 'CC', 'VSN', 'VFN', 'S']
 SOLVER_TIMEOUT = 10
 
 
 # === VIEWS===============================
 
-# Run a query on the Microsoft Academic Graph (Project Academic Knowledge)
-# https://docs.microsoft.com/en-us/academic-services/project-academic-knowledge/reference-query-expression-syntax
-def mag_query(expr, count=DEFAULT_COUNT, attributes=None):
-    attributes = ",".join(attributes or DEFAULT_ATTR)
-    query = f"expr={expr}&count={count}&attributes={attributes}"
-    target = f"https://api.labs.cognitive.microsoft.com/academic/v1.0/evaluate?{query}"
-    headers = {'Ocp-Apim-Subscription-Key': '66fef7a401e34b54a2d512c920d5af57'}
+# Run a query on Astrophysics Data System (ADS)
+# https://ui.adsabs.harvard.edu/help/api/api-docs.html
+def ads_query(expr, count=DEFAULT_COUNT, fields=None):
+    fields = ",".join(fields or DEFAULT_FIELDS)
+    query = f"q={urllib.parse.quote(expr)}&rows={count}&fl={fields}"
+    target = f"https://api.adsabs.harvard.edu/v1/search/query?{query}"
+    headers = {'Authorization': 'Bearer:Xobd9QCbDX4rfyjgE4oh1J9vPQMuqEaHdGIqwEjS'}
+    print("QUERY", target)
     res = requests.get(target, headers=headers)
-    return res.json()
+    json = res.json()
+    if 'response' in json:
+        return json['response']
+    else:
+        return {}
 
 
 # Get a set of papers' backwards references
-def mag_get_refs(ids, count=DEFAULT_COUNT, attributes=None):
-    if len(ids) == 0:
-        return []
-    paper_query_list = ",".join(f"Id={ID}" for ID in ids)
-    papers_result = mag_query(f'Or({paper_query_list})', count=len(ids), attributes=['RId'])
-    if 'entities' not in papers_result:
-        return []
-    papers = papers_result['entities']
-    parent_ids = list(set(ID for p in papers if 'RId' in p for ID in p['RId']))
-    if len(parent_ids) == 0:
-        return []
-    random.shuffle(parent_ids)
-    parents_query_list = ",".join(f"Id={ID}" for ID in parent_ids[:count])
-    result = mag_query(f"Or({parents_query_list})", count=count, attributes=attributes)
-    return result['entities'] if 'entities' in result else []
+def ads_get_refs(ids, count=DEFAULT_COUNT, attributes=None):
+    raise NotImplementedError
+    # if len(ids) == 0:
+    #     return []
+    # paper_query_list = ",".join(f"Id={ID}" for ID in ids)
+    # papers_result = mag_query(f'Or({paper_query_list})', count=len(ids), attributes=['RId'])
+    # if 'entities' not in papers_result:
+    #     return []
+    # papers = papers_result['entities']
+    # parent_ids = list(set(ID for p in papers if 'RId' in p for ID in p['RId']))
+    # if len(parent_ids) == 0:
+    #     return []
+    # random.shuffle(parent_ids)
+    # parents_query_list = ",".join(f"Id={ID}" for ID in parent_ids[:count])
+    # result = mag_query(f"Or({parents_query_list})", count=count, attributes=attributes)
+    # return result['entities'] if 'entities' in result else []
 
 
 # Get a paper's forward citations
 def mag_get_cites(ids, count=DEFAULT_COUNT, attributes=None):
-    if len(ids) == 0:
-        return []
-    child_query_list = ",".join(f"RId={ID}" for ID in ids)
-    result = mag_query(f"Or({child_query_list})", count=count, attributes=attributes)
-    return result['entities'] if 'entities' in result else []
+    raise NotImplementedError
+    # if len(ids) == 0:
+    #     return []
+    # child_query_list = ",".join(f"RId={ID}" for ID in ids)
+    # result = mag_query(f"Or({child_query_list})", count=count, attributes=attributes)
+    # return result['entities'] if 'entities' in result else []
 
 
 # Reconstruct a paper's abstract from the InvertedAbstract given by MAG.
@@ -103,44 +110,32 @@ def get_paper():
             'context': {'q': query}}), 400
 
     result = None
-    attr = ((['IA'] if request.args.get('abs') else []) +
-            (['CitCon'] if request.args.get('citcon') else []) +
-            DEFAULT_ATTR)
+    fields = ((['abstract'] if request.args.get('abs') else []) +
+              (['citation'] if request.args.get('citedBy') else []) +
+              DEFAULT_FIELDS)
 
-    if ',' in query:
-        id_list_query = ','.join(f'Id={pid}' for pid in query.split(','))
-        list_q = mag_query(f'Or({id_list_query})', attributes=attr, count=count)
-        if 'entities' in list_q and len(list_q['entities']) > 0:
-            result = list_q['entities']
+    # First search as direct Bibcode
+    bibcode_q = ads_query(f'bibcode:{query}', fields=fields, count=count)
+    if 'docs' in bibcode_q and len(bibcode_q['docs']) > 0:
+        result = bibcode_q['docs']
 
+    # Search as DOI
     if result is None:
-        id_q = mag_query(f'Id={query}', attributes=attr, count=count)
-        if 'entities' in id_q and len(id_q['entities']) > 0:
-            result = id_q['entities']
+        doi_q = ads_query(f'doi:{query}', fields=fields, count=count)
+        if 'docs' in doi_q and len(doi_q['docs']) > 0:
+            result = doi_q['docs']
 
+    # Search as title keywords
     if result is None:
-        doi_q = mag_query(f"DOI='{query.upper()}'", attributes=attr, count=count)
-        if 'entities' in doi_q and len(doi_q['entities']) > 0:
-            result = doi_q['entities']
-
-    if result is None:
-        # All titles in MAG are in lowercase
-        ti_q = mag_query(f"Ti='{query.lower()}'...", attributes=attr, count=count)
-        if 'entities' in ti_q and len(ti_q['entities']) > 0:
-            result = ti_q['entities']
+        ti_q = ads_query(f"title:\"{query}\"", fields=fields, count=count)
+        if 'docs' in ti_q and len(ti_q['docs']) > 0:
+            result = ti_q['docs']
 
     if result is None:
         return jsonify({
             'status': 'error',
             'reason': "No results",
             'context': {'query': query}}), 404
-
-    if len(result) == 1:
-        if request.args.get('abs'):
-            construct_abstract(result[0])
-
-        if request.args.get('citedBy'):
-            result[0]['citedBy'] = [p['Id'] for p in mag_get_cites([result[0]['Id']], count=count, attributes=['Id'])]
 
     return jsonify({'status': 'success', 'result': result})
 

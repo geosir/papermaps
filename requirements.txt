@@ -1,4 +1,4 @@
-Flask==1.1.2
-Flask-Cors==3.0.9
-requests==2.24.0
-PuLP==2.4
+Flask==2.3.3
+Flask-Cors==4.0.0
+requests==2.31.0
+PuLP==2.7.0

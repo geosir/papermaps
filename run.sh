@@ -7,7 +7,7 @@ function cleanup() {
 }
 
 # Start Backend
-source env/bin/activate
+# source env/bin/activate
 FLASK_ENV=development flask run &
 # Record Backend PID
 export BACKEND_PID=$!
