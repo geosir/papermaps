@@ -28,7 +28,7 @@ export const listToSet = (list, keyFxn) => list.reduce((acc, e) => {
 // Extract, stem, and tag keywords for each title.
 export function processKeywords(papers, params) {
     // Identify keywords among all titles
-    const corpus = papers.map(p => p.Ti).join(". ");
+    const corpus = papers.map(p => p.title).join(". ");
     const keywords = kextract
         .extract(corpus, {language: 'english', return_changed_case: true})
         .map(stemmer)
@@ -41,7 +41,7 @@ export function processKeywords(papers, params) {
     // Stem keywords for tagging
     const keepWordStemmer = word => [stemmer(word), word];
     const splitStemTitle = title => title.split(" ").map(keepWordStemmer);
-    const stems = papers.reduce((acc, p) => acc.concat(splitStemTitle(p.Ti)), []);
+    const stems = papers.reduce((acc, p) => acc.concat(splitStemTitle(p.title)), []);
     stems.forEach(([stem, word]) => {
         if (keywords[stem]) {
             keywords[stem].count++;
@@ -59,19 +59,19 @@ export function processKeywords(papers, params) {
 
     // Tag each paper with a list of keywords in its title
     papers.forEach(p =>
-        (p.keywords = splitStemTitle(p.Ti)
+        (p.keywords = splitStemTitle(p.title)
             .filter(([stem]) => salientKeywords[stem])
             .map(([stem]) => stem)));
 
     // Turn papers from a list into a dictionary
     const paperDict = papers.reduce((acc, p) => {
-        acc[p.Id] = p;
+        acc[p.bibcode] = p;
         return acc;
     }, {});
 
     return {
         params: params,
-        focus: papers[0].Id,
+        focus: papers[0].bibcode,
         papers: paperDict,
         keywords: salientKeywords
     };
@@ -82,7 +82,7 @@ export function processGraph(data) {
     // Populate connectivity data: link each paper to its children
     Object.values(data.papers).forEach((p) => p.children = [])
     Object.values(data.papers)
-        .forEach((p) => p.RId?.forEach((pID) => data.papers[pID]?.children.push(p.Id)))
+        .forEach((p) => p.citation?.forEach((pID) => data.papers[pID]?.children.push(p.bibcode)))
 
     // For each keyword, create a subgraph from the citation network that
     // contains only papers containing that keyword in the title.
@@ -91,7 +91,7 @@ export function processGraph(data) {
     const keywordComponents = {};
     for (let keyword of Object.keys(data.keywords)) {
         // Setup unvisited list
-        const unvisited = listToSet(Object.values(data.papers).filter((p) => p.keywords.includes(keyword)), (p) => p.Id);
+        const unvisited = listToSet(Object.values(data.papers).filter((p) => p.keywords.includes(keyword)), (p) => p.bibcode);
 
         keywordComponents[keyword] = []
 
@@ -107,14 +107,14 @@ export function processGraph(data) {
                 component.push(next)
                 // Edges
                 const paper = data.papers[next]
-                for (let edge of [...(paper.RId || []), ...paper.children]) {
+                for (let edge of [...(paper.citation || []), ...paper.children]) {
                     if (unvisited[edge]) {
                         delete unvisited[edge]
                         queue.push(edge)
                     }
                 }
             }
-            const sortedComponent = component.sort((a, b) => data.papers[a].Y - data.papers[b].Y)
+            const sortedComponent = component.sort((a, b) => data.papers[a].year - data.papers[b].year)
             keywordComponents[keyword].push(sortedComponent)
         }
     }
@@ -129,7 +129,7 @@ export function prepareLayout(data) {
     // Get character position of keywords in title
     Object.values(data.papers).forEach(paper => {
         const kwOffsets = {};
-        const words = paper.Ti.split(" ");
+        const words = paper.title.split(" ");
         const stems = words.map(stemmer);
         Object.values(paper.keywords).forEach(keyword => {
             const wordNum = stems.indexOf(keyword);
@@ -141,22 +141,22 @@ export function prepareLayout(data) {
 
     // Sort papers by year then citation topology
     const sequence = Object.keys(data.papers).sort((a, b) => {
-        if (data.papers[a].Y != data.papers[b].Y) return data.papers[a].Y - data.papers[b].Y;
-        else if (data.papers[a].RId?.includes(data.papers[b].Id)) return 1;
-        else if (data.papers[b].RId?.includes(data.papers[a].Id)) return -1;
+        if (data.papers[a].year != data.papers[b].year) return data.papers[a].year - data.papers[b].year;
+        else if (data.papers[a].citation?.includes(data.papers[b].bibcode)) return 1;
+        else if (data.papers[b].citation?.includes(data.papers[a].bibcode)) return -1;
         else return 0;
     });
     // Compute storyline sequence and locations
     sequence.forEach((id, i) => {
         const paper = data.papers[id];
         paper.index = i;
-        const yLength = String(paper.Y).length + 3;
+        const yLength = String(paper.year).length + 3;
         const cLength = String(paper.CC).length + 3;
         paper.layout = {
             x: 0,
             yLength,
             cLength,
-            width: (yLength + data.papers[id].Ti.length + cLength) * params.charWidth
+            width: (yLength + data.papers[id].title.length + cLength) * params.charWidth
         };
     });
 
@@ -247,11 +247,11 @@ export function computeYearBands(data) {
         const paper = data.papers[pid];
         if (!paper.hidden) {
             currentSpan[1] = pid;
-            if (paper.Y !== currentYear) {
+            if (paper.year !== currentYear) {
                 if (currentYear !== null) {
                     bands.push([...currentSpan]);
                 }
-                currentYear = paper.Y;
+                currentYear = paper.year;
                 currentSpan[0] = pid;
             }
         }

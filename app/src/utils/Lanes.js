@@ -265,8 +265,8 @@ export const processLayoutForLanes = async (data, selectedKW) => {
     console.log("DATA", data);
 
     const minPos = Object.values(data.papers).reduce((acc, p) => {
-        // const x = results[`p${p.Id}`];
-        const x = anchors[p.Id];
+        // const x = results[`p${p.bibcode}`];
+        const x = anchors[p.bibcode];
         if (x > 0) {
             if (acc) return Math.min(acc, x)
             else return x
@@ -274,7 +274,7 @@ export const processLayoutForLanes = async (data, selectedKW) => {
     }, undefined);
 
     Object.values(data.papers).forEach(paper => {
-        const x = anchors[paper.Id];
+        const x = anchors[paper.bibcode];
         if (x === undefined) paper.layout.x = -250;
         else if (minPos) paper.layout.x = x - minPos; // Normalize position
         else paper.layout.x = x;

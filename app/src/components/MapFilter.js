@@ -144,19 +144,19 @@ export function MapFilter(props) {
                        });
                    }}/>
                    </span>
-            <span>
-            Show Excerpts:
-            <input type={'checkbox'} checked={showExcerpts}
-                   onChange={(e) => {
-                       setShowExcerpts(e.target.checked);
-                       logEvent('change_params', {
-                           param: 'se',
-                           pathname: location.pathname,
-                           search: location.search,
-                           newState: e.target.checked
-                       });
-                   }}/>
-                   </span>
+            {/*<span>*/}
+            {/*Show Excerpts:*/}
+            {/*<input type={'checkbox'} checked={showExcerpts}*/}
+            {/*       onChange={(e) => {*/}
+            {/*           setShowExcerpts(e.target.checked);*/}
+            {/*           logEvent('change_params', {*/}
+            {/*               param: 'se',*/}
+            {/*               pathname: location.pathname,*/}
+            {/*               search: location.search,*/}
+            {/*               newState: e.target.checked*/}
+            {/*           });*/}
+            {/*       }}/>*/}
+            {/*       </span>*/}
             <span>
                 Min Citations:
                 <input type={'number'} value={minCitations}

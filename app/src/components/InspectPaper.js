@@ -16,7 +16,7 @@ function InspectPaper(props) {
     const makeFocus = (newTab = false) => () => {
         const vizType = location.pathname.split('/')[1];
         const newLocation = "/" + vizType + "/" + paperID;
-        logEvent('inspect_focus', {pid: paper.Id, vizType, newTab});
+        logEvent('inspect_focus', {pid: paper.bibcode, vizType, newTab});
         if (newTab) window.open(newLocation, "_blank");
         else window.location = newLocation; // Hard-reset state
     }
@@ -49,7 +49,7 @@ function InspectPaper(props) {
                 .then(async (res) => {
                     const result = (await res.json()).result;
                     return setCitations(result.reduce((acc, p) => {
-                        acc[p.Id] = p;
+                        acc[p.bibcode] = p;
                         return acc;
                     }, {}))
                 });
@@ -68,53 +68,53 @@ function InspectPaper(props) {
     return <div>
         {paper ? <div>
                 <p><i>{paper.VFN}</i></p>
-                <h3>{paper.DN} ({paper.Y}) <span style={{fontSize: "0.8em", display: 'inline-block'}}>
-                    <a target={"_blank"} href={"https://academic.microsoft.com/paper/" + paper.Id} onClick={() => {
-                        logEvent('inspect_mag_title_id', {pid: paper.Id});
-                    }}>ID: {paper.Id}</a>
+                <h3>{paper.title} ({paper.year}) <span style={{fontSize: "0.8em", display: 'inline-block'}}>
+                    <a target={"_blank"} href={"https://academic.microsoft.com/paper/" + paper.bibcode} onClick={() => {
+                        logEvent('inspect_mag_title_id', {pid: paper.bibcode});
+                    }}>ID: {paper.bibcode}</a>
                 </span></h3>
-                <p>{renderAuthors(paper.AA, true)} &mdash; <i>{paper.CC} citations</i></p>
+                <p>{renderAuthors(paper.author, true)} &mdash; <i>{paper.CC} citations</i></p>
                 <button onClick={makeFocus(true)}>Focus This Paper</button>
                 <button onClick={() => {
-                    logEvent('inspect_mag_button', {pid: paper.Id});
-                    window.open("https://academic.microsoft.com/paper/" + paper.Id, "_blank");
+                    logEvent('inspect_mag_button', {pid: paper.bibcode});
+                    window.open(`https://ui.adsabs.harvard.edu/abs/${paper.bibcode}/abstract`, "_blank");
                 }}>
-                    Open in Microsoft Academic
+                    Open in ADS
                 </button>
                 <h3>Abstract:</h3>
                 <p>{boldKeywords(paper.abstract)}</p>
-                <h3>Sources:</h3>
-                {paper.S ?
-                    paper.S.map((s, index) => <p key={index}>
-                        <a href={s.U} target={"_blank"} onClick={() => {
-                            logEvent('inspect_open_source', {pid: paperID, url: s.U});
-                        }}>
-                            [{SourceType[s.Ty] || "Other"}] {(new URL(s.U)).hostname}
-                        </a>
-                    </p>)
-                    :
-                    <p>(none available)</p>
-                }
-                <h3>Selected references:</h3>
-                {paper.CitCon ?
-                    Object.entries(paper.CitCon).map(([pid, excerpts]) => <div className={'excerpt-group'} key={pid}
-                                                                               id={`ex-${pid}`}>
-                        <a href={`/lanes/${pid}`} target={"_blank"} onClick={() => {
-                            logEvent('focus_citcon', {sourcePID: paperID, hash: location.hash, targetPID: pid});
-                        }}>
-                            {citations[pid] ?
-                                <span>({citations[pid].Y}) {boldKeywords(citations[pid]?.DN)} ({renderAuthors(citations[pid].AA)})</span>
-                                :
-                                <span>[{pid}]</span>
-                            }</a>
-                        {excerpts.map((excerpt, i) => <p className={'excerpt'} key={i}
-                                                         style={location.hash === `#ex-${pid}-${i}` ? {backgroundColor: 'yellow'} : {}}>
-                            {boldKeywords(excerpt)}</p>)}
-                        <hr/>
-                    </div>)
-                    :
-                    <p>(none available)</p>
-                }
+                {/*<h3>Sources:</h3>*/}
+                {/*{paper.S ?*/}
+                {/*    paper.S.map((s, index) => <p key={index}>*/}
+                {/*        <a href={s.U} target={"_blank"} onClick={() => {*/}
+                {/*            logEvent('inspect_open_source', {pid: paperID, url: s.U});*/}
+                {/*        }}>*/}
+                {/*            [{SourceType[s.Ty] || "Other"}] {(new URL(s.U)).hostname}*/}
+                {/*        </a>*/}
+                {/*    </p>)*/}
+                {/*    :*/}
+                {/*    <p>(none available)</p>*/}
+                {/*}*/}
+                {/*<h3>Selected references:</h3>*/}
+                {/*{paper.CitCon ?*/}
+                {/*    Object.entries(paper.CitCon).map(([pid, excerpts]) => <div className={'excerpt-group'} key={pid}*/}
+                {/*                                                               id={`ex-${pid}`}>*/}
+                {/*        <a href={`/lanes/${pid}`} target={"_blank"} onClick={() => {*/}
+                {/*            logEvent('focus_citcon', {sourcePID: paperID, hash: location.hash, targetPID: pid});*/}
+                {/*        }}>*/}
+                {/*            {citations[pid] ?*/}
+                {/*                <span>({citations[pid].year}) {boldKeywords(citations[pid]?.title)} ({renderAuthors(citations[pid].author)})</span>*/}
+                {/*                :*/}
+                {/*                <span>[{pid}]</span>*/}
+                {/*            }</a>*/}
+                {/*        {excerpts.map((excerpt, i) => <p className={'excerpt'} key={i}*/}
+                {/*                                         style={location.hash === `#ex-${pid}-${i}` ? {backgroundColor: 'yellow'} : {}}>*/}
+                {/*            {boldKeywords(excerpt)}</p>)}*/}
+                {/*        <hr/>*/}
+                {/*    </div>)*/}
+                {/*    :*/}
+                {/*    <p>(none available)</p>*/}
+                {/*}*/}
             </div>
             :
             <p className={'status working'}>

@@ -34,32 +34,32 @@ export const genericMakeMenuHandler = (props, data, p, expansions, makeInspectTi
     e.preventDefault();
     e.stopPropagation();
     const computeRemoves = () => {
-        const notThisPaper = Object.values(data.papers).filter(o => o.Id !== p.Id);
-        const connected = notThisPaper.filter(other => (other.RId?.includes(p.Id) || p.RId?.includes(other.Id)));
-        const orphaned = connected.filter(other => !(other.RId?.some(id => id !== p.Id && data.papers[id]) || notThisPaper.some(p => p.RId?.includes(other.Id))));
+        const notThisPaper = Object.values(data.papers).filter(o => o.bibcode !== p.bibcode);
+        const connected = notThisPaper.filter(other => (other.citation?.includes(p.bibcode) || p.citation?.includes(other.bibcode)));
+        const orphaned = connected.filter(other => !(other.citation?.some(id => id !== p.bibcode && data.papers[id]) || notThisPaper.some(p => p.citation?.includes(other.bibcode))));
         return orphaned.length;
     }
     setMenuData({
         position: {x: e.pageX, y: e.pageY},
-        pid: p.Id,
-        inspect: makeInspectTitle(p.Id),
-        ...expansions.includes(String(p.Id)) ? {
+        pid: p.bibcode,
+        inspect: makeInspectTitle(p.bibcode),
+        ...expansions.includes(String(p.bibcode)) ? {
             collapse: {
                 removes: computeRemoves(),
-                doCollapse: () => selectExpansions(expansions.filter(id => id !== String(p.Id)))
+                doCollapse: () => selectExpansions(expansions.filter(id => id !== String(p.bibcode)))
             }
         } : {
             expand: {
-                adds: (p.citedBy?.filter(pid => !data.papers[pid]).length || 0) + (p.RId?.filter(pid => !data.papers[pid]).length || 0),
-                common: (p.citedBy?.filter(pid => data.papers[pid]).length || 0) + (p.RId?.filter(pid => data.papers[pid]).length || 0),
-                doExpand: () => selectExpansions(expansions.concat([String(p.Id)]))
+                adds: (p.citedBy?.filter(pid => !data.papers[pid]).length || 0) + (p.citation?.filter(pid => !data.papers[pid]).length || 0),
+                common: (p.citedBy?.filter(pid => data.papers[pid]).length || 0) + (p.citation?.filter(pid => data.papers[pid]).length || 0),
+                doExpand: () => selectExpansions(expansions.concat([String(p.bibcode)]))
             }
         },
         selectKW: () => selectKW(p.keywords.filter((k) => data.keywords[k])),
         paperKeywords: p.keywords.filter((k) => data.keywords[k]),
         ...keyword && {selectOneKW: () => selectKW([keyword]), singleKeyword: keyword}
     });
-    logEvent('menu', {pid: p.Id, keyword: keyword, position: {x: e.pageX, y: e.pageY}});
+    logEvent('menu', {pid: p.bibcode, keyword: keyword, position: {x: e.pageX, y: e.pageY}});
 }
 
 export const genericMakeInspectTitle = (id, props, search, history, location, hash) => (e) => {

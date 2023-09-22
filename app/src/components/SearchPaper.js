@@ -20,7 +20,7 @@ const makeExpand = (id, location) => () => {
     }
 }
 
-const makePaperItemRenderer = (next, location, history) => (e) => <div className={'search-result'} key={e.Id}>
+const makePaperItemRenderer = (next, location, history) => (e) => <div className={'search-result'} key={e.bibcode}>
     <a href={(next ? next : "/lanes/") + e.bibcode} onClick={() => logEvent('search_select', {pid: e.bibcode})}>
         <p className={'search-title'}><b>({e.year}) {e.title}</b></p>
     </a>
@@ -28,12 +28,12 @@ const makePaperItemRenderer = (next, location, history) => (e) => <div className
     <p className={'search-detail'}>
         <span className={'search-expand'}>
             <a href={"javascript:void(0)"} onClick={(event) => {
-                makeExpand(e.Id, location, history)(event);
+                makeExpand(e.bibcode, location, history)(event);
                 logEvent('search_expand', {pid: e.bibcode})
             }}>Add to Map</a>
         </span> &mdash; <span className={'search-id'}>
         <a target={"_blank"} href={`https://ui.adsabs.harvard.edu/abs/${e.bibcode}/abstract`}
-           onClick={() => logEvent('search_mag', {pid: e.Id})}>
+           onClick={() => logEvent('search_mag', {pid: e.bibcode})}>
             Bibcode: {e.bibcode}</a></span> &mdash; <span className={'search-citations'}>cited {e.citation_count} times</span>
     </p>
 </div>;

@@ -33,60 +33,39 @@ SOLVER_TIMEOUT = 10
 # https://ui.adsabs.harvard.edu/help/api/api-docs.html
 def ads_query(expr, count=DEFAULT_COUNT, fields=None):
     fields = ",".join(fields or DEFAULT_FIELDS)
-    query = f"q={urllib.parse.quote(expr)}&rows={count}&fl={fields}"
+    query = f"q={urllib.parse.quote(expr)}&rows={count}&fl={fields}&sort=citation_count+desc"
     target = f"https://api.adsabs.harvard.edu/v1/search/query?{query}"
     headers = {'Authorization': 'Bearer:Xobd9QCbDX4rfyjgE4oh1J9vPQMuqEaHdGIqwEjS'}
     print("QUERY", target)
     res = requests.get(target, headers=headers)
     json = res.json()
     if 'response' in json:
+        # Pre-process results
+        if 'docs' in json['response']:
+            for doc in json['response']['docs']:
+                if 'title' in doc:
+                    doc['title'] = doc['title'][0]
         return json['response']
     else:
         return {}
 
 
 # Get a set of papers' backwards references
-def ads_get_refs(ids, count=DEFAULT_COUNT, attributes=None):
-    raise NotImplementedError
-    # if len(ids) == 0:
-    #     return []
-    # paper_query_list = ",".join(f"Id={ID}" for ID in ids)
-    # papers_result = mag_query(f'Or({paper_query_list})', count=len(ids), attributes=['RId'])
-    # if 'entities' not in papers_result:
-    #     return []
-    # papers = papers_result['entities']
-    # parent_ids = list(set(ID for p in papers if 'RId' in p for ID in p['RId']))
-    # if len(parent_ids) == 0:
-    #     return []
-    # random.shuffle(parent_ids)
-    # parents_query_list = ",".join(f"Id={ID}" for ID in parent_ids[:count])
-    # result = mag_query(f"Or({parents_query_list})", count=count, attributes=attributes)
-    # return result['entities'] if 'entities' in result else []
+def ads_get_refs(bibcodes, count=DEFAULT_COUNT, fields=None):
+    if len(bibcodes) == 0:
+        return []
+    joined_bibcodes = " OR ".join(bibcodes)
+    result = ads_query(f"references({joined_bibcodes})", count=count, fields=fields)
+    return result['docs'] if 'docs' in result else []
 
 
 # Get a paper's forward citations
-def mag_get_cites(ids, count=DEFAULT_COUNT, attributes=None):
-    raise NotImplementedError
-    # if len(ids) == 0:
-    #     return []
-    # child_query_list = ",".join(f"RId={ID}" for ID in ids)
-    # result = mag_query(f"Or({child_query_list})", count=count, attributes=attributes)
-    # return result['entities'] if 'entities' in result else []
-
-
-# Reconstruct a paper's abstract from the InvertedAbstract given by MAG.
-def construct_abstract(paper):
-    if 'IA' not in paper:
-        # No InvertedAbstract. Do nothing.
-        return paper
-
-    abstract = ['?'] * paper['IA']['IndexLength']
-    for token, positions in paper['IA']['InvertedIndex'].items():
-        for pos in positions:
-            abstract[pos] = token
-
-    paper['abstract'] = " ".join(abstract)
-    return paper
+def ads_get_cites(bibcodes, count=DEFAULT_COUNT, fields=None):
+    if len(bibcodes) == 0:
+        return []
+    joined_bibcodes = " OR ".join(bibcodes)
+    result = ads_query(f"citations({joined_bibcodes})", count=count, fields=fields)
+    return result['docs'] if 'docs' in result else []
 
 
 # === ROUTES =============================
@@ -137,58 +116,47 @@ def get_paper():
             'reason': "No results",
             'context': {'query': query}}), 404
 
+    print(f"GET_PAPER -> {len(result)} results")
     return jsonify({'status': 'success', 'result': result})
 
 
 @app.route("/api/get_refs")
 @cross_origin()
 def get_refs():
-    ID = request.args.get('id')
-    if ',' in ID:
+    bibcode = request.args.get('id')
+    if ',' in bibcode:
         # Provided a list of ids
-        ids = ID.split(',')
+        bibcodes = bibcode.split(',')
     else:
-        ids = [ID]
+        bibcodes = [bibcode]
     count = int(request.args.get('n') or DEFAULT_COUNT)
 
-    attr = ((['CitCon'] if request.args.get('citcon') else []) +
-            (['IA'] if request.args.get('abs') else []) +
-            DEFAULT_ATTR)
-    results = mag_get_refs(ids, count=count, attributes=attr)
+    fields = ((['abstract'] if request.args.get('abs') else []) +
+              (['citation'] if request.args.get('citedBy') else []) +
+              DEFAULT_FIELDS)
+    results = ads_get_refs(bibcodes, count=count, fields=fields)
 
-    if request.args.get('abs'):
-        results = list(map(construct_abstract, results))
-
-    if request.args.get('citedBy'):
-        for result in results:
-            result['citedBy'] = [p['Id'] for p in mag_get_cites([result['Id']], count=count, attributes=['Id'])]
-
+    print(f"GET_REFS -> {len(results)} results")
     return jsonify({'status': 'success', 'result': results})
 
 
 @app.route("/api/get_cites")
 @cross_origin()
 def get_cites():
-    ID = request.args.get('id')
-    if ',' in ID:
+    bibcode = request.args.get('id')
+    if ',' in bibcode:
         # Provided a list of ids
-        ids = ID.split(',')
+        bibcodes = bibcode.split(',')
     else:
-        ids = [ID]
+        bibcodes = [bibcode]
     count = int(request.args.get('n') or DEFAULT_COUNT)
 
-    attr = ((['CitCon'] if request.args.get('citcon') else []) +
-            (['IA'] if request.args.get('abs') else []) +
-            DEFAULT_ATTR)
-    results = mag_get_cites(ids, count=count, attributes=attr)
+    fields = ((['abstract'] if request.args.get('abs') else []) +
+              (['citation'] if request.args.get('citedBy') else []) +
+              DEFAULT_FIELDS)
+    results = ads_get_cites(bibcodes, count=count, fields=fields)
 
-    if request.args.get('abs'):
-        results = list(map(construct_abstract, results))
-
-    if request.args.get('citedBy'):
-        for result in results:
-            result['citedBy'] = [p['Id'] for p in mag_get_cites([result['Id']], count=count, attributes=['Id'])]
-
+    print(f"GET_CITES -> {len(results)} results")
     return jsonify({'status': 'success', 'result': list(results)})
 
 
