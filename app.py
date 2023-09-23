@@ -111,11 +111,11 @@ def get_paper():
         if 'docs' in doi_q and len(doi_q['docs']) > 0:
             result = doi_q['docs']
 
-    # Search generally
+    # Search directly
     if result is None:
-        full_q = ads_query(f"full:\"{query}\"", fields=fields, count=count)
-        if 'docs' in full_q and len(full_q['docs']) > 0:
-            result = full_q['docs']
+        direct_q = ads_query(query, fields=fields, count=count)
+        if 'docs' in direct_q and len(direct_q['docs']) > 0:
+            result = direct_q['docs']
 
     if result is None:
         return jsonify({

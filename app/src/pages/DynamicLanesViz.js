@@ -194,6 +194,7 @@ export default function DynamicLanesViz(props) {
                 setStatus({status: 'working', message: "Getting Papers..."});
                 const level0 = await getPaper(paperID, params);
                 const level1 = [...await getRefs(paperID, params), ...await getCites(paperID, params)];
+                console.log("EXPANSIONS", expansions)
                 const expanded = expansions.length ? [
                     ...await getPaper(expansions.join(","), params),
                     ...await getRefs(expansions.join(","), params),
@@ -258,6 +259,7 @@ export default function DynamicLanesViz(props) {
         setSearched(search?.get("q"));
         if (search?.get("inspect")) setInspect(search?.get("inspect"));
         else setInspect(paperID);
+        console.log("INSPECT", inspect)
     }, [location]);
 
     // DEBUG
@@ -478,6 +480,8 @@ export default function DynamicLanesViz(props) {
                 <ul style={{listStyleType: 'none', paddingLeft: 16}}>
                     {Object.keys(data.keywords).filter((k) => kwfilter.split(" ").some((term) => k.includes(term) || term.includes(k)))
                         .sort((a, b) => {
+                            if (selectedKW.includes(a) && !selectedKW.includes(b)) return -1
+                            else if (selectedKW.includes(b) && !selectedKW.includes(a)) return 1
                             if (kwSort === 'count') return getKeywordCount(b) - getKeywordCount(a);
                             else if (kwSort === 'az') return a.localeCompare(b);
                             else return getKeywordLineCount(b) - getKeywordLineCount(a);

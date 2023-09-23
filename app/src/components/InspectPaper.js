@@ -70,9 +70,10 @@ function InspectPaper(props) {
         {paper ? <div>
                 <p><i>{paper.VFN}</i></p>
                 <h3>{paper.title} ({paper.year}) <span style={{fontSize: "0.8em", display: 'inline-block'}}>
-                    <a target={"_blank"} href={"https://academic.microsoft.com/paper/" + paper.bibcode} onClick={() => {
-                        logEvent('inspect_mag_title_id', {pid: paper.bibcode});
-                    }}>ID: {paper.bibcode}</a>
+                    <a target={"_blank"} href={`https://ui.adsabs.harvard.edu/abs/${paper.bibcode}/abstract`}
+                       onClick={() => {
+                           logEvent('inspect_mag_title_id', {pid: paper.bibcode});
+                       }}>ID: {paper.bibcode}</a>
                 </span></h3>
                 <p>{renderAuthors(paper.author, showFullAuthors, (paper.author?.length || 0) > 10)}{" "}
                     {(paper.author?.length || 0) > 3 &&
