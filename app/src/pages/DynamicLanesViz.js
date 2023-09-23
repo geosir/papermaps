@@ -108,6 +108,8 @@ export default function DynamicLanesViz(props) {
 
     const [kwSort, setKWSort] = useState('count');
 
+    const [showMapPanel, setShowMapPanel] = useState(true);
+
     const makeInspectTitle = (id, hash) => {
         setInspect(id);
         return genericMakeInspectTitle(id, props, search, history, location, hash);
@@ -320,11 +322,26 @@ export default function DynamicLanesViz(props) {
     }
 
     return <div id={'viz-panel'}>
-        <div id={'map-panel'}>
-            <div id={'map-panel-content'}>
-                {searched ? <SearchPaper/> : <InspectPaper id={inspect} data={data}/>}
+        {showMapPanel ?
+            <div id={'map-panel'}>
+                <div id={'map-panel-content'}>
+                    {searched ? <SearchPaper/> : <InspectPaper id={inspect} data={data}/>}
+                    <div><a href={"javascript:void(0)"} onClick={() => {
+                        setShowMapPanel(false);
+                        props.setShowSearch(false);
+                    }}>
+                        Hide Panel
+                    </a></div>
+                </div>
             </div>
-        </div>
+            : <div id={'show-map-panel'}>
+                <a href={"javascript:void(0)"} onClick={() => {
+                    setShowMapPanel(true);
+                    props.setShowSearch(true);
+                }}>
+                    Show Panel
+                </a></div>
+        }
         <div style={{pointerEvents: panning ? 'none' : 'auto', overflow: 'hidden', flex: 1, position: 'relative'}}
              onContextMenu={(e) => e.preventDefault()}>
             {Boolean(status) &&

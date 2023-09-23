@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from "react";
+import React, {useEffect, useState, useRef, useLayoutEffect} from "react";
 import {TransformComponent, TransformWrapper} from "react-zoom-pan-pinch";
 import {getViewBox} from "../utils/Common";
 
@@ -13,6 +13,11 @@ export function PanSVG(props) {
     //     }
     // })
 
+    const [svgWidth, setSvgWidth] = useState(0)
+    useLayoutEffect(() => {
+        setSvgWidth(container.current?.offsetWidth || 0)
+    })
+
     return <div ref={container} style={{flex: 1, overflow: 'hidden'}}>
         <TransformWrapper doubleClick={{disabled: true}} options={{maxScale: 100}}
                           wheel={{step: 6.5}} // wheel={{step: step}}
@@ -24,7 +29,7 @@ export function PanSVG(props) {
                 <svg id={'papermap'}
                      viewBox={getViewBox(props.maxDims)}
                      style={{
-                         width: container.current?.offsetWidth,
+                         width: svgWidth,
                          height: '100vh',
                          cursor: 'grab', margin: 0
                      }}>

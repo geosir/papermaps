@@ -15,6 +15,8 @@ export default function Map(props) {
     const search = new URLSearchParams(location.search);
     const [query, setQuery] = useState(search.get("q"));
 
+    const [showSearch, setShowSearch] = useState(true)
+
     const handleSubmit = (e) => {
         e.preventDefault();
         search.set('q', query)
@@ -29,11 +31,11 @@ export default function Map(props) {
 
     // Rendering
     const Visualization = useMemo(() => {
-        return <DynamicLanesViz {...props}/>
+        return <DynamicLanesViz {...props} setShowSearch={setShowSearch}/>
     }, []);
 
     return <div id={'app'}>
-        <div id={'map-search'}>
+        {showSearch && <div id={'map-search'}>
             <form onSubmit={handleSubmit}>
                 <input
                     id={'search'}
@@ -45,7 +47,7 @@ export default function Map(props) {
                     placeholder={"Search by Keywords, BibCode, or DOI"}
                 />
             </form>
-        </div>
+        </div>}
 
         <div id={'body'}>
             {Visualization}
