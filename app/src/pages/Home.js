@@ -33,7 +33,7 @@ function Home() {
                 type={'text'}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder={"Search by Title Keywords, Bibcode, or DOI"}
+                placeholder={"Search by Keywords, Bibcode, or DOI"}
             />
         </form>
         {searched && <SearchPaper/>}

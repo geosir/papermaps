@@ -42,7 +42,7 @@ export default function Map(props) {
                     type={'text'}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder={"Search by Title Keywords, BibCode, or DOI"}
+                    placeholder={"Search by Keywords, BibCode, or DOI"}
                 />
             </form>
         </div>

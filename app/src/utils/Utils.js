@@ -2,12 +2,19 @@
 
 import Values from "../constants/Values";
 
-export const renderAuthors = (authors, full) => {
+export const renderAuthors = (authors, full = false, count = false) => {
+    if (!authors?.length) return "Unknown"
+    let authorString
     if (authors.length > 3 && !full) {
-        return authors[0].split(",")[0] + ", et al.";
+        authorString = authors[0].split(",")[0] + ", et al.";
     } else {
-        return authors.map((a) => a.split(",")[0]).join(", ")
+        authorString = authors.map((a) => a.split(",")[0]).join(", ")
     }
+    if (count) {
+        authorString += ` (${authors.length} total)`
+    }
+    return authorString
+
 }
 
 // Helper to evaluate a fxn (curr, prev, i) over a sliding window on an array

@@ -12,6 +12,7 @@ function InspectPaper(props) {
 
     const [paper, setPaper] = useState(null);
     const [citations, setCitations] = useState({});
+    const [showFullAuthors, setShowFullAuthors] = useState(false)
 
     const makeFocus = (newTab = false) => () => {
         const vizType = location.pathname.split('/')[1];
@@ -73,7 +74,12 @@ function InspectPaper(props) {
                         logEvent('inspect_mag_title_id', {pid: paper.bibcode});
                     }}>ID: {paper.bibcode}</a>
                 </span></h3>
-                <p>{renderAuthors(paper.author, true)} &mdash; <i>{paper.citation_count} citations</i></p>
+                <p>{renderAuthors(paper.author, showFullAuthors, (paper.author?.length || 0) > 10)}{" "}
+                    {(paper.author?.length || 0) > 3 &&
+                        <a href={"javascript:void(0)"} onClick={() => setShowFullAuthors(!showFullAuthors)}>
+                            {showFullAuthors ? "Hide" : "Show All"}</a>}
+                </p>
+                <p><i>{paper.citation_count} citations</i></p>
                 <button onClick={makeFocus(true)}>Focus This Paper</button>
                 <button onClick={() => {
                     logEvent('inspect_mag_button', {pid: paper.bibcode});

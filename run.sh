@@ -3,17 +3,16 @@
 # Cleanup (Run upon ^C)
 trap cleanup INT
 function cleanup() {
-	kill $BACKEND_PID
+  echo "Stopping backend..."
+  kill $BACKEND_PID
+  echo "Quit."
 }
 
 # Start Backend
 # source env/bin/activate
-FLASK_ENV=development flask run &
+flask --app app.py --debug run &
 # Record Backend PID
 export BACKEND_PID=$!
 
 # Start Frontend
 cd app && yarn start
-
-
-
