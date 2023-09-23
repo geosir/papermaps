@@ -473,6 +473,7 @@ export default function DynamicLanesViz(props) {
                 <a href={"javascript:void(0)"} style={kwSort === 'lines' ? {fontWeight: 'bold'} : {}}
                    onClick={() => setKWSort('lines')}>Lines</a>
             </div>
+            <div><a href={"javascript:void(0)"} onClick={() => selectKW([])}>Clear Selection</a></div>
             {data &&
                 <ul style={{listStyleType: 'none', paddingLeft: 16}}>
                     {Object.keys(data.keywords).filter((k) => kwfilter.split(" ").some((term) => k.includes(term) || term.includes(k)))
