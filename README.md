@@ -3,6 +3,8 @@ PaperMaps
 Using Title Keywords for Visual Exploration of Academic Citation Networks
 (George's Thesis 2020-2021)
 
+[Paper](https://nrs.harvard.edu/URN-3:HUL.INSTREPOS:37368585)
+
 This is an experimental layout intended to help researchers tell better stories of new topics areas they would like to
 explore, to aid understanding and discovery of related works.
 
