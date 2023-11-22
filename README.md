@@ -56,15 +56,13 @@ Deploying to Production
 
 1. Deploy the backend server in `app.py`.
 
-The quickest (but sloppy) way to do this is to serve it with Flask. This is how it's currently served from the research
-site at [https://papermaps.me](https://papermaps.me). To serve with flask, just run:
+The quickest (but sloppy) way to do this is to serve it with Flask. To serve with flask, just run:
 
 ```shell
 FLASK_ENV=development flask run
 ```
 
-This will host the backend server at `localhost:5000`. The research site is set up with nginx to proxy queries from
-[https://papermaps.me/api](https://papermaps.me/api) to `localhost:5000`.
+This will host the backend server at `localhost:5000`. 
 
 A better way to do this would be to modify `app.py` to be deployed as USGI or ASGI and use something like uvicorn to
 serve it, which will provide production-quality hosting, notably multiple workers instead of the single-threaded debug
@@ -85,10 +83,6 @@ make
 The compiled website will now be in `app/build`.
 
 3. Serve `build/` as a single-page-app.
-
-For [https://papermaps.me](https://papermaps.me), this is accomplished using nginx to serve the `build/` directory as an
-SPA. This is done by just routing all queries to `/` and all 404 errors to `build/index.html`.
-
 
 Future Work
 -----
